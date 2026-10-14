@@ -1,21 +1,33 @@
-"use client";
-
-import React from "react";
+import React, { useRef } from "react";
 import { Html } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 interface BookshelfDecorationsProps {
   isFocused?: boolean;
   onSelectShelf?: () => void;
   onHoverShelf?: (hover: boolean) => void;
+  hoveredObjectId?: string | null;
 }
 
 export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
   isFocused = false,
   onSelectShelf,
   onHoverShelf,
+  hoveredObjectId,
 }) => {
+  const shelfRef = useRef<THREE.Group | null>(null);
+
+  useFrame((state, delta) => {
+    if (shelfRef.current) {
+      const target = hoveredObjectId === "bookshelf" ? 1.05 : 1.0;
+      const cur = THREE.MathUtils.damp(shelfRef.current.scale.x, target, 12, delta);
+      shelfRef.current.scale.set(cur, cur, cur);
+    }
+  });
+
   return (
-    <group position={[1.95, 0, -0.23]}>
+    <group ref={shelfRef} position={[1.95, 0, -0.23]}>
       {/* 1. Warm LED Light Strips along the front edge of each shelf board */}
       {[1.818, 1.398, 0.978, 0.558].map((yPos, idx) => (
         <group key={`shelf-led-${idx}`} position={[0, yPos, -0.015]}>

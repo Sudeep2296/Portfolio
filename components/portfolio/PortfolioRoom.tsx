@@ -868,6 +868,20 @@ function createBookCoverTexture(): THREE.CanvasTexture | null {
   return texture;
 }
 
+interface ScaleItem {
+  obj: THREE.Object3D;
+  origPos: THREE.Vector3;
+  origScale: THREE.Vector3;
+  offset: THREE.Vector3;
+}
+
+interface ScaleTarget {
+  id: string;
+  items: ScaleItem[];
+  center: THREE.Vector3;
+  currentFactor: number;
+}
+
 export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
   onSelectObject,
   hoveredObjectId,
@@ -889,6 +903,11 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
   const { scene } = useGLTF("/models/portfolio_room.glb");
   const [hoveredBook, setHoveredBook] = useState<string | null>(null);
   const [hoveredSwitch, setHoveredSwitch] = useState<boolean>(false);
+
+  // Smooth 3D object hover scaling targets & HTML overlay refs
+  const scaleTargetsRef = useRef<Map<string, ScaleTarget>>(new Map());
+  const neonHtmlRef = useRef<THREE.Group | null>(null);
+  const monitorHtmlRef = useRef<THREE.Group | null>(null);
 
   // Globe rotatable state & refs
   const globeMeshRef = useRef<THREE.Mesh | null>(null);
@@ -1548,9 +1567,103 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
       const mat = duck.material as THREE.MeshStandardMaterial;
       mat.color = new THREE.Color(0xfde047);
     }
+
+    // Initialize 3D interactive object hover scaling targets with stored original transforms
+    scene.updateMatrixWorld(true);
+    const targets = new Map<string, ScaleTarget>();
+
+    const objectMeshMappings: Record<string, string[]> = {
+      monitor: ["Monitor_Screen", "Monitor_Body", "Monitor_Base", "Monitor_Neck"],
+      clock: ["Desk_Clock", "Desk_Clock_Screen"],
+      globe: ["Globe", "Globe_Stem", "Globe_Ring", "Globe_Base"],
+      lamp: ["Lamp_Base", "Lamp_Head", "Lamp_Bulb", "Lamp_Arm_Lower", "Lamp_Arm_Upper"],
+      soundboard: ["Soundboard"],
+      whiteboard: ["Whiteboard", "Whiteboard_Frame", "Whiteboard_Tray"],
+      certificates: ["Book_Certificates", "Book_Certificates_Cover"],
+      tryhackme: ["Wall_Frame", "Wall_Frame_Screen"],
+      testimonials: ["Testimonial_Card", "Testimonial_Base", "Testimonial_Post_L", "Testimonial_Post_R"],
+      phone: ["Phone_Body", "Phone_Screen"],
+      neon: ["Neon_Sign", "Neon_Sign_Frame"],
+      window: ["Window_Frame", "Window_Glass", "Window_Bar_V", "Window_Bar_H"],
+    };
+
+    Object.entries(objectMeshMappings).forEach(([id, meshNames]) => {
+      const items: Array<{ obj: THREE.Object3D; origPos: THREE.Vector3; origScale: THREE.Vector3 }> = [];
+      const box = new THREE.Box3();
+
+      meshNames.forEach((name) => {
+        const obj = scene.getObjectByName(name);
+        if (obj) {
+          items.push({
+            obj,
+            origPos: obj.position.clone(),
+            origScale: obj.scale.clone(),
+          });
+          box.expandByObject(obj);
+        }
+      });
+
+      if (items.length > 0) {
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        const scaleItems: ScaleItem[] = items.map((item) => ({
+          obj: item.obj,
+          origPos: item.origPos,
+          origScale: item.origScale,
+          offset: item.origPos.clone().sub(center),
+        }));
+
+        targets.set(id, {
+          id,
+          items: scaleItems,
+          center,
+          currentFactor: 1.0,
+        });
+      }
+    });
+
+    // Bookshelf: includes shelf structure, books, plants, duck, trophy, boxes
+    const shelfItems: Array<{ obj: THREE.Object3D; origPos: THREE.Vector3; origScale: THREE.Vector3 }> = [];
+    const shelfBox = new THREE.Box3();
+    scene.traverse((obj) => {
+      if (
+        obj.name &&
+        (obj.name.startsWith("Shelf_") ||
+          obj.name.startsWith("Trophy_") ||
+          obj.name.startsWith("Duck_") ||
+          obj.name.startsWith("ShelfPlant_"))
+      ) {
+        shelfItems.push({
+          obj,
+          origPos: obj.position.clone(),
+          origScale: obj.scale.clone(),
+        });
+        shelfBox.expandByObject(obj);
+      }
+    });
+
+    if (shelfItems.length > 0) {
+      const center = new THREE.Vector3();
+      shelfBox.getCenter(center);
+      const scaleItems: ScaleItem[] = shelfItems.map((item) => ({
+        obj: item.obj,
+        origPos: item.origPos,
+        origScale: item.origScale,
+        offset: item.origPos.clone().sub(center),
+      }));
+
+      targets.set("bookshelf", {
+        id: "bookshelf",
+        items: scaleItems,
+        center,
+        currentFactor: 1.0,
+      });
+    }
+
+    scaleTargetsRef.current = targets;
   }, [scene]);
 
-  // Update animations, lamp bulb state, and globe rotation without mutating object materials on hover
+  // Update animations, lamp bulb state, globe rotation, and smooth hover scaling
   useFrame((state, delta) => {
     // Sync lamp bulb emissive state (only bulb emits practical light)
     const lampBulb = scene.getObjectByName("Lamp_Bulb") as THREE.Mesh;
@@ -1581,6 +1694,44 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
         const currentSpeed = 0.28 + globeSpinVelocity.current;
         globeMesh.rotateY(currentSpeed * delta);
       }
+    }
+
+    // Smooth subtle 3D object hover scaling (1.05x enlargement, 200-300ms transition)
+    const activeHoverId = interactionState === "ROOM_OVERVIEW" ? hoveredObjectId : null;
+    scaleTargetsRef.current.forEach((target) => {
+      const isHovered = target.id === activeHoverId;
+      const targetFactor = isHovered ? 1.05 : 1.0;
+
+      const prevFactor = target.currentFactor;
+      // THREE.MathUtils.damp with lambda=12 smoothly settles to 95% in ~250ms
+      target.currentFactor = THREE.MathUtils.damp(target.currentFactor, targetFactor, 12, delta);
+
+      // Snap once resting to prevent micro-jitter
+      if (Math.abs(target.currentFactor - targetFactor) < 0.0002) {
+        target.currentFactor = targetFactor;
+      }
+
+      // Update 3D transforms only when animating or not at exact 1.0 base scale
+      if (target.currentFactor !== prevFactor || target.currentFactor !== 1.0) {
+        const k = target.currentFactor;
+        const center = target.center;
+        target.items.forEach(({ obj, origPos, origScale, offset }) => {
+          obj.scale.set(origScale.x * k, origScale.y * k, origScale.z * k);
+          obj.position.set(center.x + offset.x * k, center.y + offset.y * k, center.z + offset.z * k);
+        });
+      }
+    });
+
+    // Synchronize HTML 3D overlays for monitor & neon
+    if (monitorHtmlRef.current) {
+      const monitorTarget = scaleTargetsRef.current.get("monitor");
+      const k = monitorTarget ? monitorTarget.currentFactor : 1.0;
+      monitorHtmlRef.current.scale.set(k, k, k);
+    }
+    if (neonHtmlRef.current) {
+      const neonTarget = scaleTargetsRef.current.get("neon");
+      const k = neonTarget ? neonTarget.currentFactor : 1.0;
+      neonHtmlRef.current.scale.set(k, k, k);
     }
   });
 
@@ -1764,7 +1915,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
       {hasEntered && (
         <>
           {/* 3. Dynamic Typewriter Neon Sign (Mounted on Acrylic Frame) */}
-          <group position={[0.0, 2.05, -0.564]}>
+          <group ref={neonHtmlRef} position={[0.0, 2.05, -0.564]}>
             <Html
               transform
               distanceFactor={0.50}
@@ -1791,7 +1942,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
 
           {/* 4. 3D Monitor Screen Surface (Developer Desktop / Projects OS) */}
           {(interactionState === "ROOM_OVERVIEW" || activeObjectId === "monitor") && (
-            <group position={[0, 1.145, -0.183]}>
+            <group ref={monitorHtmlRef} position={[0, 1.145, -0.183]}>
               {/* Dedicated Solid Click Target for Monitor in Room Overview */}
               {interactionState === "ROOM_OVERVIEW" && (
                 <mesh
@@ -1857,6 +2008,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
             isFocused={activeObjectId === "bookshelf"}
             onSelectShelf={() => onSelectObject("bookshelf")}
             onHoverShelf={(hover) => onHoverObject(hover ? "bookshelf" : null)}
+            hoveredObjectId={interactionState === "ROOM_OVERVIEW" ? hoveredObjectId : null}
           />
 
           {/* 7. Desk Gadgets (Live Digital Clock, Certificate Wall Badge, Testimonial Stand) */}
@@ -1872,6 +2024,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
             onSelectTestimonials={() => onSelectObject("testimonials")}
             onSelectContact={() => onSelectObject("soundboard")}
             onHoverObject={interactionState === "ROOM_OVERVIEW" ? onHoverObject : undefined}
+            hoveredObjectId={interactionState === "ROOM_OVERVIEW" ? hoveredObjectId : null}
           />
 
           {/* Dedicated Invisible Interactive Colliders for Seamless Hover Detection */}

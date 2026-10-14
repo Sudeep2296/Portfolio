@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Html } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { Shield, Award, CheckCircle, ExternalLink } from "lucide-react";
 
 interface DeskGadgetsProps {
@@ -16,6 +18,7 @@ interface DeskGadgetsProps {
   onSelectTestimonials?: () => void;
   onSelectContact?: () => void;
   onHoverObject?: (id: string | null) => void;
+  hoveredObjectId?: string | null;
 }
 
 export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
@@ -30,7 +33,33 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
   onSelectTestimonials,
   onSelectContact,
   onHoverObject,
+  hoveredObjectId,
 }) => {
+  const clockRef = useRef<THREE.Group | null>(null);
+  const thmRef = useRef<THREE.Group | null>(null);
+  const testRef = useRef<THREE.Group | null>(null);
+
+  useFrame((state, delta) => {
+    const isClock = hoveredObjectId === "clock";
+    const isThm = hoveredObjectId === "tryhackme";
+    const isTest = hoveredObjectId === "testimonials";
+
+    if (clockRef.current) {
+      const target = isClock ? 1.05 : 1.0;
+      const cur = THREE.MathUtils.damp(clockRef.current.scale.x, target, 12, delta);
+      clockRef.current.scale.set(cur, cur, cur);
+    }
+    if (thmRef.current) {
+      const target = isThm ? 1.05 : 1.0;
+      const cur = THREE.MathUtils.damp(thmRef.current.scale.x, target, 12, delta);
+      thmRef.current.scale.set(cur, cur, cur);
+    }
+    if (testRef.current) {
+      const target = isTest ? 1.05 : 1.0;
+      const cur = THREE.MathUtils.damp(testRef.current.scale.x, target, 12, delta);
+      testRef.current.scale.set(cur, cur, cur);
+    }
+  });
   const [time, setTime] = useState({
     hours: "12",
     minutes: "30",
@@ -75,7 +104,7 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
   return (
     <>
       {/* 1. Digital Desk Clock Screen */}
-      <group position={[-0.50, 0.802, -0.098]}>
+      <group ref={clockRef} position={[-0.50, 0.802, -0.098]}>
         <Html
           transform
           distanceFactor={0.12}
@@ -132,7 +161,7 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
       </group>
 
       {/* 2. Wall Frame (TryHackMe Profile Showcase matching reference image) */}
-      <group position={[0.80, 1.55, -0.576]}>
+      <group ref={thmRef} position={[0.80, 1.55, -0.576]}>
         <Html
           transform
           distanceFactor={0.38}
@@ -196,7 +225,7 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
       </group>
 
       {/* 3. Testimonial Card on Desk (Easel / Rolodex stand matching reference) */}
-      <group position={[-0.62, 0.865, 0.205]} rotation={[-0.258, 0, 0]}>
+      <group ref={testRef} position={[-0.62, 0.865, 0.205]} rotation={[-0.258, 0, 0]}>
         <Html
           transform
           distanceFactor={0.12}
