@@ -1550,48 +1550,20 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     }
   }, [scene]);
 
-  // Update materials, emissives, and sync lamp bulb with lampOn state
+  // Update animations, lamp bulb state, and globe rotation without mutating object materials on hover
   useFrame((state, delta) => {
-    const time = state.clock.getElapsedTime();
-    scene.traverse((obj) => {
-      if ((obj as THREE.Mesh).isMesh) {
-        const mesh = obj as THREE.Mesh;
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        const objId = meshToObjectIdMap.get(mesh.name);
-
-        if (mat) {
-          // Sync lamp bulb emissive state (only bulb emits practical light)
-          if (mesh.name === "Lamp_Bulb") {
-            if (lampOn) {
-              mat.emissive = new THREE.Color(0xffcb8a);
-              mat.emissiveIntensity = 2.5;
-            } else {
-              mat.emissive = new THREE.Color(0x111111);
-              mat.emissiveIntensity = 0.05;
-            }
-          }
-
-          // Interactive hover highlight in overview mode
-          if (
-            interactionState === "ROOM_OVERVIEW" &&
-            mat &&
-            objId &&
-            objId !== "lamp"
-          ) {
-            const isHovered = objId === hoveredObjectId;
-            if (isHovered && mat.emissive) {
-              const pulse = 0.5 + 0.5 * Math.sin(time * 6);
-              const targetColor = new THREE.Color(interactiveObjects[objId]?.color || 0xa855f7);
-              mat.emissive.lerp(targetColor, 0.2);
-              mat.emissiveIntensity = 0.45 + 0.25 * pulse;
-            } else if (mat.emissive && mat.emissiveIntensity > 0.01) {
-              mat.emissive.lerp(new THREE.Color(0x000000), 0.15);
-              mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, 0, 0.15);
-            }
-          }
-        }
+    // Sync lamp bulb emissive state (only bulb emits practical light)
+    const lampBulb = scene.getObjectByName("Lamp_Bulb") as THREE.Mesh;
+    if (lampBulb && lampBulb.material) {
+      const mat = lampBulb.material as THREE.MeshStandardMaterial;
+      if (lampOn) {
+        mat.emissive.set(0xffcb8a);
+        mat.emissiveIntensity = 2.5;
+      } else {
+        mat.emissive.set(0x111111);
+        mat.emissiveIntensity = 0.05;
       }
-    });
+    }
 
     // Animate Wall Switch toggle lever
     const swToggle = scene.getObjectByName("Wall_Switch_Toggle") as THREE.Mesh;
