@@ -1,35 +1,74 @@
+# ==========================================
 # Dependencies
+# ==========================================
 /node_modules/
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# Next.js build output
+# ==========================================
+# Next.js Build & Outputs
+# ==========================================
 /.next/
 /out/
-/build
+/build/
+.vercel
 
-# TypeScript build info
+# ==========================================
+# TypeScript
+# ==========================================
 *.tsbuildinfo
 
-# Environment variables
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
 .env*
 !.env.example
 
-# Debug and process logs
+# ==========================================
+# AI Agent & Workflow Frameworks (.agent, .agents, .gemini, .gsd, etc.)
+# ==========================================
+/.agent/
+/.agents/
+/.gemini/
+/.gsd/
+/adapters/
+/scripts/
+/GSD-STYLE.md
+/PROJECT_RULES.md
+/VERSION
+/model_capabilities.yaml
+
+# ==========================================
+# Temporary, Reference & Scratch Files
+# ==========================================
+/scratch/
+/upendradasanayaka.vercel.app/
+upendra_*.js
+/*.png
+/room.glb
+
+# ==========================================
+# IDE & Editor Configurations
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==========================================
+# OS & System Files
+# ==========================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# Vercel deployment
-.vercel
-
-# Operating System files
-.DS_Store
-Thumbs.db
-
-# Local temporary / scratch / reference files
-/scratch/
-/upendradasanayaka.vercel.app/
-upendra_*.js
