@@ -1,0 +1,6 @@
+export type InteractionState =
+  | "ROOM_OVERVIEW"
+  | "CAMERA_TRANSITION"
+  | "OBJECT_FOCUSED"
+  | "CONTENT_INTERACTION"
+  | "RETURNING_TO_ROOM";

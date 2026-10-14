@@ -1,0 +1,261 @@
+export interface CameraViewConfig {
+  position: [number, number, number];
+  target: [number, number, number];
+}
+
+export interface InteractiveRoomObject {
+  id: string;
+  name: string;
+  category: string;
+  meshNames: string[];
+  camera: CameraViewConfig;
+  hint: string;
+  color: string;
+  description: string;
+  labelOffset: [number, number, number];
+}
+
+// Wide centered overview viewpoint matching reference framing
+export const DEFAULT_CAMERA_VIEW: CameraViewConfig = {
+  position: [0.0, 1.57, 3.42],
+  target: [0.0, 1.17, -0.35],
+};
+
+export const interactiveObjects: Record<string, InteractiveRoomObject> = {
+  neon: {
+    id: "neon",
+    name: "Neon Sign",
+    category: "Identity",
+    meshNames: ["Neon_Sign", "Neon_Sign_Frame"],
+    camera: {
+      position: [0.0, 1.95, 0.52],
+      target: [0.0, 2.05, -0.568],
+    },
+    hint: "Click to view identity & summary",
+    color: "#f43f5e",
+    description: "Personal identity and technical philosophy.",
+    labelOffset: [0, 2.22, -0.56],
+  },
+  monitor: {
+    id: "monitor",
+    name: "Main Monitor",
+    category: "Projects",
+    meshNames: ["Monitor_Screen", "Monitor_Body", "Monitor_Base", "Monitor_Neck"],
+    camera: {
+      position: [0.0, 1.145, 0.34],
+      target: [0.0, 1.145, -0.184],
+    },
+    hint: "Click to explore verified projects",
+    color: "#38bdf8",
+    description: "Explore interactive simulators, AI pipelines, and systems.",
+    labelOffset: [0, 1.48, -0.15],
+  },
+  bookshelf: {
+    id: "bookshelf",
+    name: "Projects Bookshelf",
+    category: "Projects",
+    meshNames: [
+      "Shelf_Side_L",
+      "Shelf_Side_R",
+      "Shelf_Back",
+      "Shelf_Board_0",
+      "Shelf_Board_1",
+      "Shelf_Board_2",
+      "Shelf_Board_3",
+      "Shelf_Board_4",
+      "Shelf_Board_5",
+      "Shelf_Book_Pro_0",
+      "Shelf_Book_Pro_0_Spine",
+      "Shelf_Book_Pro_1",
+      "Shelf_Book_Pro_1_Spine",
+      "Shelf_Book_Personal_0",
+      "Shelf_Book_Personal_0_Spine",
+      "Shelf_Book_Personal_1",
+      "Shelf_Book_Personal_1_Spine",
+      "Shelf_Book_Personal_2",
+      "Shelf_Book_Personal_2_Spine",
+      "Shelf_Book_Personal_3",
+      "Shelf_Book_Personal_3_Spine",
+      "Shelf_Book_Personal_4",
+      "Shelf_Book_Personal_4_Spine",
+      "Shelf_Book_Personal_5",
+      "Shelf_Book_Personal_5_Spine",
+      "Shelf_Book_Personal_6",
+      "Shelf_Book_Personal_6_Spine",
+      "Shelf_Book_Academic_0",
+      "Shelf_Book_Academic_0_Spine",
+      "Shelf_Book_Academic_1",
+      "Shelf_Book_Academic_1_Spine",
+      "Shelf_Book_Academic_2",
+      "Shelf_Book_Academic_2_Spine",
+      "Shelf_Photo_Frame",
+      "Shelf_Photo",
+      "Trophy_Cup",
+      "Duck_Body",
+      "Shelf_Box_CtfNotes",
+      "Shelf_Box_Cables",
+      "Shelf_Box_Archive",
+    ],
+    camera: {
+      position: [1.95, 1.25, 1.40],
+      target: [1.95, 1.25, -0.25],
+    },
+    hint: "Click to explore projects on the bookshelf",
+    color: "#a855f7",
+    description: "Every book is a project — pick one to explore.",
+    labelOffset: [1.95, 2.05, -0.22],
+  },
+  whiteboard: {
+    id: "whiteboard",
+    name: "Whiteboard",
+    category: "Architecture",
+    meshNames: ["Whiteboard", "Whiteboard_Frame", "Whiteboard_Tray"],
+    camera: {
+      position: [-1.05, 1.42, 0.52],
+      target: [-1.05, 1.42, -0.578],
+    },
+    hint: "Click to inspect technical architecture",
+    color: "#34d399",
+    description: "Interactive visual diagrams of protocols and AI pipelines.",
+    labelOffset: [-1.05, 1.92, -0.54],
+  },
+  soundboard: {
+    id: "soundboard",
+    name: "Soundboard",
+    category: "Connect",
+    meshNames: [
+      "Soundboard_Body",
+      "Soundboard_Btn_Email",
+      "Soundboard_Btn_Message",
+      "Soundboard_Btn_Phone",
+      "Soundboard_Knob",
+      "Soundboard_LCD",
+      "Soundboard_MessageScreen",
+      "Soundboard_Social_0",
+      "Soundboard_Social_1",
+      "Soundboard_Social_2",
+      "Soundboard_Social_3",
+      "Soundboard_Social_4",
+    ],
+    camera: {
+      position: [0.78, 1.12, 0.35],
+      target: [0.80, 0.79, 0.04],
+    },
+    hint: "Click to open contact channels & social links",
+    color: "#fbbf24",
+    description: "Quick contact console, GitHub, LinkedIn, and messaging.",
+    labelOffset: [0.8, 0.94, 0.04],
+  },
+  lamp: {
+    id: "lamp",
+    name: "Desk Lamp",
+    category: "Lighting",
+    meshNames: ["Lamp_Base", "Lamp_Head", "Lamp_Bulb", "Lamp_Arm_Lower", "Lamp_Arm_Upper"],
+    camera: {
+      position: [0.72, 1.15, 0.35],
+      target: [0.7, 1.105, -0.235],
+    },
+    hint: "Click to toggle desk lamp lighting",
+    color: "#f59e0b",
+    description: "Click to switch desk lamp on or off.",
+    labelOffset: [0.7, 1.25, -0.235],
+  },
+  globe: {
+    id: "globe",
+    name: "Globe",
+    category: "Interests",
+    meshNames: ["Globe", "Globe_Stem", "Globe_Ring", "Globe_Base"],
+    camera: {
+      position: [-0.85, 1.15, 0.72],
+      target: [-0.85, 1.025, -0.22],
+    },
+    hint: "Click to view research horizons & global focus",
+    color: "#818cf8",
+    description: "Exploration in open-source research and distributed computing.",
+    labelOffset: [-0.85, 1.2, -0.22],
+  },
+  clock: {
+    id: "clock",
+    name: "Desk Clock",
+    category: "Availability",
+    meshNames: ["Desk_Clock", "Desk_Clock_Screen"],
+    camera: {
+      position: [-0.50, 0.88, 0.14],
+      target: [-0.50, 0.802, -0.0995],
+    },
+    hint: "Click to view time zone (IST) & availability",
+    color: "#2dd4bf",
+    description: "Current time and communication availability.",
+    labelOffset: [-0.50, 0.94, -0.09],
+  },
+  phone: {
+    id: "phone",
+    name: "Smartphone",
+    category: "Direct Contact",
+    meshNames: ["Phone_Body", "Phone_Screen"],
+    camera: {
+      position: [-0.28, 0.98, 0.42],
+      target: [-0.33, 0.78, 0.27],
+    },
+    hint: "Click for direct communication channels",
+    color: "#ec4899",
+    description: "Mobile contact channel and direct messaging.",
+    labelOffset: [-0.33, 0.86, 0.27],
+  },
+  certificates: {
+    id: "certificates",
+    name: "Certificates",
+    category: "Credentials",
+    meshNames: ["Book_Certificates", "Book_Certificates_Cover"],
+    camera: {
+      position: [-0.92, 1.25, 0.52],
+      target: [-0.92, 0.80, 0.12],
+    },
+    hint: "Click to open certificates & achievements",
+    color: "#a855f7",
+    description: "Industry certifications, cybersecurity badges, and competitive achievements.",
+    labelOffset: [-0.92, 0.98, 0.12],
+  },
+  tryhackme: {
+    id: "tryhackme",
+    name: "My live hacker profile",
+    category: "Cybersecurity",
+    meshNames: ["Wall_Frame", "Wall_Frame_Screen"],
+    camera: {
+      position: [0.88, 1.53, 0.35],
+      target: [0.88, 1.53, -0.59],
+    },
+    hint: "Click to view live TryHackMe hacker profile",
+    color: "#22c55e",
+    description: "Live hacker profile, CTF ranks, streak, and rooms completed.",
+    labelOffset: [0.80, 1.80, -0.57],
+  },
+  testimonials: {
+    id: "testimonials",
+    name: "Testimonials",
+    category: "Feedback",
+    meshNames: ["Testimonial_Card", "Testimonial_Base", "Testimonial_Post_L", "Testimonial_Post_R"],
+    camera: {
+      position: [-0.62, 0.91, 0.56],
+      target: [-0.62, 0.84, 0.205],
+    },
+    hint: "Click to view client endorsements & recommendations",
+    color: "#a855f7",
+    description: "Client feedback and recommendations from colleagues.",
+    labelOffset: [-0.62, 0.98, 0.20],
+  },
+  window: {
+    id: "window",
+    name: "Window & Curtains",
+    category: "Ambiance",
+    meshNames: ["Window_Frame", "Window_Glass", "Window_Bar_V", "Window_Bar_H"],
+    camera: {
+      position: [-2.40, 1.70, 1.20],
+      target: [-2.40, 1.70, -0.52],
+    },
+    hint: "Click to toggle window curtains",
+    color: "#38bdf8",
+    description: "Toggle velvet curtains to change room ambiance and natural lighting.",
+    labelOffset: [-2.40, 2.38, -0.52],
+  },
+};

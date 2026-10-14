@@ -1,0 +1,35 @@
+# Dependencies
+/node_modules/
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js build output
+/.next/
+/out/
+/build
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Environment variables
+.env*
+!.env.example
+
+# Debug and process logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vercel deployment
+.vercel
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Local temporary / scratch / reference files
+/scratch/
+/upendradasanayaka.vercel.app/
+upendra_*.js
