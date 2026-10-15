@@ -882,6 +882,41 @@ interface ScaleTarget {
   currentFactor: number;
 }
 
+function getBookshelfItemTargetId(meshName: string): string | null {
+  if (!meshName) return null;
+  if (meshName.startsWith("Shelf_Book_")) {
+    return meshName.replace("_Spine", "");
+  }
+  if (meshName.startsWith("Duck_")) {
+    return "shelf_duck";
+  }
+  if (meshName.startsWith("Trophy_")) {
+    return "shelf_trophy";
+  }
+  if (meshName.startsWith("Shelf_Photo")) {
+    return "shelf_photo";
+  }
+  if (meshName.startsWith("Shelf_Box_CtfNotes")) {
+    return "shelf_box_ctf";
+  }
+  if (meshName.startsWith("Shelf_Box_Cables")) {
+    return "shelf_box_cables";
+  }
+  if (meshName.startsWith("Shelf_Box_Archive")) {
+    return "shelf_box_archive";
+  }
+  if (meshName.startsWith("ShelfPlant_Top_")) {
+    return "shelf_plant_top";
+  }
+  if (meshName.startsWith("ShelfPlant_Pro_")) {
+    return "shelf_plant_pro";
+  }
+  if (meshName.startsWith("ShelfPlant_Academic_")) {
+    return "shelf_plant_academic";
+  }
+  return null;
+}
+
 export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
   onSelectObject,
   hoveredObjectId,
@@ -906,6 +941,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
 
   // Smooth 3D object hover scaling targets & HTML overlay refs
   const scaleTargetsRef = useRef<Map<string, ScaleTarget>>(new Map());
+  const hoveredShelfItemRef = useRef<string | null>(null);
   const neonHtmlRef = useRef<THREE.Group | null>(null);
   const monitorHtmlRef = useRef<THREE.Group | null>(null);
 
@@ -991,7 +1027,17 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     map.set("Shelf_Box_Archive", "bookshelf");
     map.set("Shelf_Box_Archive_Label", "bookshelf");
     map.set("Trophy_Cup", "bookshelf");
+    map.set("Trophy_Base", "bookshelf");
+    map.set("Trophy_Stem", "bookshelf");
     map.set("Duck_Body", "bookshelf");
+    map.set("Duck_Beak", "bookshelf");
+    map.set("Duck_Head", "bookshelf");
+    ["ShelfPlant_Top", "ShelfPlant_Pro", "ShelfPlant_Academic"].forEach((prefix) => {
+      map.set(`${prefix}_Pot`, "bookshelf");
+      for (let i = 0; i <= 5; i++) {
+        map.set(`${prefix}_Leaf${i}`, "bookshelf");
+      }
+    });
 
     // Wall Frame (TryHackMe Profile)
     map.set("Wall_Frame", "tryhackme");
@@ -1004,6 +1050,8 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     // Testimonials
     map.set("Testimonial_Card", "testimonials");
     map.set("Testimonial_Base", "testimonials");
+    map.set("Testimonial_Post_L", "testimonials");
+    map.set("Testimonial_Post_R", "testimonials");
 
     // Soundboard
     map.set("Soundboard", "soundboard");
@@ -1572,7 +1620,65 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     scene.updateMatrixWorld(true);
     const targets = new Map<string, ScaleTarget>();
 
+    // Unified bookshelf target in ROOM_OVERVIEW (shelf structure, boards, all 12 books, duck, trophy, boxes, plants)
+    const bookshelfMeshes = [
+      "Shelf_Side_L",
+      "Shelf_Side_R",
+      "Shelf_Back",
+      "Shelf_Board_0",
+      "Shelf_Board_1",
+      "Shelf_Board_2",
+      "Shelf_Board_3",
+      "Shelf_Board_4",
+      "Shelf_Board_5",
+      "Shelf_Photo",
+      "Shelf_Photo_Frame",
+      "Shelf_Box_CtfNotes",
+      "Shelf_Box_CtfNotes_Label",
+      "Shelf_Box_Cables",
+      "Shelf_Box_Cables_Label",
+      "Shelf_Box_Archive",
+      "Shelf_Box_Archive_Label",
+      "Trophy_Cup",
+      "Trophy_Base",
+      "Trophy_Stem",
+      "Duck_Body",
+      "Duck_Beak",
+      "Duck_Head",
+      "ShelfPlant_Top_Pot",
+      "ShelfPlant_Top_Leaf0",
+      "ShelfPlant_Top_Leaf1",
+      "ShelfPlant_Top_Leaf2",
+      "ShelfPlant_Top_Leaf3",
+      "ShelfPlant_Top_Leaf4",
+      "ShelfPlant_Top_Leaf5",
+      "ShelfPlant_Pro_Pot",
+      "ShelfPlant_Pro_Leaf0",
+      "ShelfPlant_Pro_Leaf1",
+      "ShelfPlant_Pro_Leaf2",
+      "ShelfPlant_Pro_Leaf3",
+      "ShelfPlant_Pro_Leaf4",
+      "ShelfPlant_Pro_Leaf5",
+      "ShelfPlant_Academic_Pot",
+      "ShelfPlant_Academic_Leaf0",
+      "ShelfPlant_Academic_Leaf1",
+      "ShelfPlant_Academic_Leaf2",
+      "ShelfPlant_Academic_Leaf3",
+      "ShelfPlant_Academic_Leaf4",
+      "ShelfPlant_Academic_Leaf5",
+    ];
+    for (let i = 0; i <= 1; i++) {
+      bookshelfMeshes.push(`Shelf_Book_Pro_${i}`, `Shelf_Book_Pro_${i}_Spine`);
+    }
+    for (let i = 0; i <= 6; i++) {
+      bookshelfMeshes.push(`Shelf_Book_Personal_${i}`, `Shelf_Book_Personal_${i}_Spine`);
+    }
+    for (let i = 0; i <= 2; i++) {
+      bookshelfMeshes.push(`Shelf_Book_Academic_${i}`, `Shelf_Book_Academic_${i}_Spine`);
+    }
+
     const objectMeshMappings: Record<string, string[]> = {
+      bookshelf: bookshelfMeshes,
       monitor: ["Monitor_Screen", "Monitor_Body", "Monitor_Base", "Monitor_Neck"],
       clock: ["Desk_Clock", "Desk_Clock_Screen"],
       globe: ["Globe", "Globe_Stem", "Globe_Ring", "Globe_Base"],
@@ -1584,8 +1690,61 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
       testimonials: ["Testimonial_Card", "Testimonial_Base", "Testimonial_Post_L", "Testimonial_Post_R"],
       phone: ["Phone_Body", "Phone_Screen"],
       neon: ["Neon_Sign", "Neon_Sign_Frame"],
-      window: ["Window_Frame", "Window_Glass", "Window_Bar_V", "Window_Bar_H"],
+      // Individual bookshelf items (each scales independently around its own center)
+      shelf_duck: ["Duck_Body", "Duck_Beak", "Duck_Head"],
+      shelf_trophy: ["Trophy_Cup", "Trophy_Base", "Trophy_Stem"],
+      shelf_photo: ["Shelf_Photo", "Shelf_Photo_Frame"],
+      shelf_box_ctf: ["Shelf_Box_CtfNotes", "Shelf_Box_CtfNotes_Label"],
+      shelf_box_cables: ["Shelf_Box_Cables", "Shelf_Box_Cables_Label"],
+      shelf_box_archive: ["Shelf_Box_Archive", "Shelf_Box_Archive_Label"],
+      shelf_plant_top: [
+        "ShelfPlant_Top_Pot",
+        "ShelfPlant_Top_Leaf0",
+        "ShelfPlant_Top_Leaf1",
+        "ShelfPlant_Top_Leaf2",
+        "ShelfPlant_Top_Leaf3",
+        "ShelfPlant_Top_Leaf4",
+        "ShelfPlant_Top_Leaf5",
+      ],
+      shelf_plant_pro: [
+        "ShelfPlant_Pro_Pot",
+        "ShelfPlant_Pro_Leaf0",
+        "ShelfPlant_Pro_Leaf1",
+        "ShelfPlant_Pro_Leaf2",
+        "ShelfPlant_Pro_Leaf3",
+        "ShelfPlant_Pro_Leaf4",
+        "ShelfPlant_Pro_Leaf5",
+      ],
+      shelf_plant_academic: [
+        "ShelfPlant_Academic_Pot",
+        "ShelfPlant_Academic_Leaf0",
+        "ShelfPlant_Academic_Leaf1",
+        "ShelfPlant_Academic_Leaf2",
+        "ShelfPlant_Academic_Leaf3",
+        "ShelfPlant_Academic_Leaf4",
+        "ShelfPlant_Academic_Leaf5",
+      ],
     };
+
+    // 12 individual books on shelves (each book body + spine quad scales together in place)
+    for (let i = 0; i <= 1; i++) {
+      objectMeshMappings[`Shelf_Book_Pro_${i}`] = [
+        `Shelf_Book_Pro_${i}`,
+        `Shelf_Book_Pro_${i}_Spine`,
+      ];
+    }
+    for (let i = 0; i <= 6; i++) {
+      objectMeshMappings[`Shelf_Book_Personal_${i}`] = [
+        `Shelf_Book_Personal_${i}`,
+        `Shelf_Book_Personal_${i}_Spine`,
+      ];
+    }
+    for (let i = 0; i <= 2; i++) {
+      objectMeshMappings[`Shelf_Book_Academic_${i}`] = [
+        `Shelf_Book_Academic_${i}`,
+        `Shelf_Book_Academic_${i}_Spine`,
+      ];
+    }
 
     Object.entries(objectMeshMappings).forEach(([id, meshNames]) => {
       const items: Array<{ obj: THREE.Object3D; origPos: THREE.Vector3; origScale: THREE.Vector3 }> = [];
@@ -1605,7 +1764,12 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
 
       if (items.length > 0) {
         const center = new THREE.Vector3();
-        box.getCenter(center);
+        if (id === "bookshelf") {
+          // Lock to exact center matching BookshelfDecorations root group to eliminate any light-line drift
+          center.set(1.95, 1.14, -0.40);
+        } else {
+          box.getCenter(center);
+        }
         const scaleItems: ScaleItem[] = items.map((item) => ({
           obj: item.obj,
           origPos: item.origPos,
@@ -1621,44 +1785,6 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
         });
       }
     });
-
-    // Bookshelf: includes shelf structure, books, plants, duck, trophy, boxes
-    const shelfItems: Array<{ obj: THREE.Object3D; origPos: THREE.Vector3; origScale: THREE.Vector3 }> = [];
-    const shelfBox = new THREE.Box3();
-    scene.traverse((obj) => {
-      if (
-        obj.name &&
-        (obj.name.startsWith("Shelf_") ||
-          obj.name.startsWith("Trophy_") ||
-          obj.name.startsWith("Duck_") ||
-          obj.name.startsWith("ShelfPlant_"))
-      ) {
-        shelfItems.push({
-          obj,
-          origPos: obj.position.clone(),
-          origScale: obj.scale.clone(),
-        });
-        shelfBox.expandByObject(obj);
-      }
-    });
-
-    if (shelfItems.length > 0) {
-      const center = new THREE.Vector3();
-      shelfBox.getCenter(center);
-      const scaleItems: ScaleItem[] = shelfItems.map((item) => ({
-        obj: item.obj,
-        origPos: item.origPos,
-        origScale: item.origScale,
-        offset: item.origPos.clone().sub(center),
-      }));
-
-      targets.set("bookshelf", {
-        id: "bookshelf",
-        items: scaleItems,
-        center,
-        currentFactor: 1.0,
-      });
-    }
 
     scaleTargetsRef.current = targets;
   }, [scene]);
@@ -1697,7 +1823,10 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     }
 
     // Smooth subtle 3D object hover scaling (1.05x enlargement, 200-300ms transition)
-    const activeHoverId = interactionState === "ROOM_OVERVIEW" ? hoveredObjectId : null;
+    const activeHoverId =
+      interactionState === "ROOM_OVERVIEW"
+        ? hoveredObjectId
+        : (activeObjectId === "bookshelf" ? hoveredShelfItemRef.current : null);
     scaleTargetsRef.current.forEach((target) => {
       const isHovered = target.id === activeHoverId;
       const targetFactor = isHovered ? 1.05 : 1.0;
@@ -1716,22 +1845,22 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
         const k = target.currentFactor;
         const center = target.center;
         target.items.forEach(({ obj, origPos, origScale, offset }) => {
-          obj.scale.set(origScale.x * k, origScale.y * k, origScale.z * k);
-          obj.position.set(center.x + offset.x * k, center.y + offset.y * k, center.z + offset.z * k);
+          if (k === 1.0) {
+            obj.scale.copy(origScale);
+            obj.position.copy(origPos);
+          } else {
+            obj.scale.set(origScale.x * k, origScale.y * k, origScale.z * k);
+            obj.position.set(center.x + offset.x * k, center.y + offset.y * k, center.z + offset.z * k);
+          }
         });
       }
     });
 
-    // Synchronize HTML 3D overlays for monitor & neon
+    // Synchronize HTML 3D overlays for monitor
     if (monitorHtmlRef.current) {
       const monitorTarget = scaleTargetsRef.current.get("monitor");
       const k = monitorTarget ? monitorTarget.currentFactor : 1.0;
       monitorHtmlRef.current.scale.set(k, k, k);
-    }
-    if (neonHtmlRef.current) {
-      const neonTarget = scaleTargetsRef.current.get("neon");
-      const k = neonTarget ? neonTarget.currentFactor : 1.0;
-      neonHtmlRef.current.scale.set(k, k, k);
     }
   });
 
@@ -1767,7 +1896,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
     }
 
     let current: THREE.Object3D | null = e.object;
-    while (current) {
+    while (current && current !== scene && current.type !== "Scene") {
       if (
         current.name === "Window_Frame" ||
         current.name === "Window_Glass" ||
@@ -1775,6 +1904,17 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
         current.name === "Window_Bar_H"
       ) {
         onToggleCurtains();
+        return;
+      }
+      if (current.name === "Wall_Frame" || current.name === "Wall_Frame_Screen") {
+        onSelectObject("tryhackme");
+        return;
+      }
+      if (
+        current.name &&
+        (current.name.startsWith("Testimonial_") || current.name === "Testimonial_Card")
+      ) {
+        onSelectObject("testimonials");
         return;
       }
       const targetId = meshToObjectIdMap.get(current.name);
@@ -1793,61 +1933,117 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
   const handlePointerOver = (e: any) => {
     e.stopPropagation();
 
-    // Hover effect on Wall Switch
+    // 1. Hover effect on Wall Switch
     let checkSwitch: THREE.Object3D | null = e.object;
-    while (checkSwitch) {
+    while (checkSwitch && checkSwitch !== scene && checkSwitch.type !== "Scene") {
       if (checkSwitch.name === "Wall_Switch" || checkSwitch.name === "Wall_Switch_Toggle") {
         document.body.style.cursor = "pointer";
         setHoveredSwitch(true);
+        hoveredShelfItemRef.current = null;
         return;
       }
       checkSwitch = checkSwitch.parent;
     }
 
-    // Hover effect on bookshelf books
-    if (activeObjectId === "bookshelf") {
-      let current: THREE.Object3D | null = e.object;
-      while (current) {
-        const baseName = current.name.replace("_Spine", "");
-        if (BOOKSHELF_PROJECTS[baseName]) {
+    // 2. High-priority Monitor hover (only in ROOM_OVERVIEW)
+    if (interactionState === "ROOM_OVERVIEW") {
+      let checkMonitorHover: THREE.Object3D | null = e.object;
+      while (checkMonitorHover && checkMonitorHover !== scene && checkMonitorHover.type !== "Scene") {
+        if (checkMonitorHover.name && checkMonitorHover.name.startsWith("Monitor_")) {
+          hoveredShelfItemRef.current = null;
           document.body.style.cursor = "pointer";
-          setHoveredBook(baseName);
+          onHoverObject("monitor");
           return;
         }
-        current = current.parent;
+        checkMonitorHover = checkMonitorHover.parent;
       }
+    }
+
+    // 3. Bookshelf individual items & static shelf structure
+    let checkShelf: THREE.Object3D | null = e.object;
+    while (checkShelf && checkShelf !== scene && checkShelf.type !== "Scene") {
+      const shelfItemId = getBookshelfItemTargetId(checkShelf.name);
+      if (shelfItemId) {
+        document.body.style.cursor = "pointer";
+        hoveredShelfItemRef.current = shelfItemId;
+        if (checkShelf.name.startsWith("Shelf_Book_")) {
+          setHoveredBook(shelfItemId);
+        } else {
+          setHoveredBook(null);
+        }
+        if (interactionState === "ROOM_OVERVIEW") {
+          onHoverObject("bookshelf");
+        }
+        return;
+      }
+      if (
+        checkShelf.name &&
+        (checkShelf.name.startsWith("Shelf_Board_") ||
+          checkShelf.name === "Shelf_Side_L" ||
+          checkShelf.name === "Shelf_Side_R" ||
+          checkShelf.name === "Shelf_Back")
+      ) {
+        // Shelf structure wood: cursor indicates clickable, but NO scale target
+        document.body.style.cursor = "pointer";
+        hoveredShelfItemRef.current = null;
+        setHoveredBook(null);
+        if (interactionState === "ROOM_OVERVIEW") {
+          onHoverObject("bookshelf");
+        }
+        return;
+      }
+      checkShelf = checkShelf.parent;
+    }
+
+    // If focused on bookshelf and not over any shelf object, clear hover
+    if (activeObjectId === "bookshelf") {
+      document.body.style.cursor = "default";
+      hoveredShelfItemRef.current = null;
+      setHoveredBook(null);
       return;
     }
 
     if (interactionState !== "ROOM_OVERVIEW") return;
 
-    // High-priority Monitor hover
-    let checkMonitorHover: THREE.Object3D | null = e.object;
-    while (checkMonitorHover) {
-      if (checkMonitorHover.name && checkMonitorHover.name.startsWith("Monitor_")) {
+    let current: THREE.Object3D | null = e.object;
+    while (current && current !== scene && current.type !== "Scene") {
+      // Prioritize exact Live Hacker Profile object (Wall_Frame)
+      if (current.name === "Wall_Frame" || current.name === "Wall_Frame_Screen") {
         document.body.style.cursor = "pointer";
-        onHoverObject("monitor");
+        hoveredShelfItemRef.current = null;
+        setHoveredBook(null);
+        onHoverObject("tryhackme");
         return;
       }
-      checkMonitorHover = checkMonitorHover.parent;
-    }
-
-    let current: THREE.Object3D | null = e.object;
-    while (current) {
+      // Prioritize exact Testimonial stand objects
+      if (
+        current.name &&
+        (current.name.startsWith("Testimonial_") || current.name === "Testimonial_Card")
+      ) {
+        document.body.style.cursor = "pointer";
+        hoveredShelfItemRef.current = null;
+        setHoveredBook(null);
+        onHoverObject("testimonials");
+        return;
+      }
       if (
         current.name === "Window_Frame" ||
         current.name === "Window_Glass" ||
         current.name === "Window_Bar_V" ||
         current.name === "Window_Bar_H" ||
-        current.name.startsWith("Curtain")
+        (current.name && current.name.startsWith("Curtain"))
       ) {
         document.body.style.cursor = "pointer";
-        onHoverObject("window");
+        hoveredShelfItemRef.current = null;
+        setHoveredBook(null);
+        onHoverObject(null);
         return;
       }
       const targetId = meshToObjectIdMap.get(current.name);
       if (targetId) {
         document.body.style.cursor = targetId === "globe" ? "grab" : "pointer";
+        hoveredShelfItemRef.current = null;
+        setHoveredBook(null);
         onHoverObject(targetId);
         return;
       }
@@ -1856,6 +2052,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
 
     // Default if cursor moves onto non-interactive surface (Desk, Wall, Floor, etc.)
     document.body.style.cursor = "default";
+    hoveredShelfItemRef.current = null;
     setHoveredBook(null);
     setHoveredSwitch(false);
     onHoverObject(null);
@@ -1864,6 +2061,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
   const handlePointerOut = (e: any) => {
     e.stopPropagation();
     document.body.style.cursor = "default";
+    hoveredShelfItemRef.current = null;
     setHoveredBook(null);
     setHoveredSwitch(false);
     if (interactionState === "ROOM_OVERVIEW") {
@@ -1915,7 +2113,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
       {hasEntered && (
         <>
           {/* 3. Dynamic Typewriter Neon Sign (Mounted on Acrylic Frame) */}
-          <group ref={neonHtmlRef} position={[0.0, 2.05, -0.564]}>
+          <group ref={neonHtmlRef} position={[0.0, 2.05, -0.535]}>
             <Html
               transform
               distanceFactor={0.50}
@@ -1925,7 +2123,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
                   : "none"
               }
               style={{
-                width: "1040px",
+                width: "1080px",
                 height: "240px",
                 transformOrigin: "center center",
               }}
@@ -2009,6 +2207,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
             onSelectShelf={() => onSelectObject("bookshelf")}
             onHoverShelf={(hover) => onHoverObject(hover ? "bookshelf" : null)}
             hoveredObjectId={interactionState === "ROOM_OVERVIEW" ? hoveredObjectId : null}
+            interactionState={interactionState}
           />
 
           {/* 7. Desk Gadgets (Live Digital Clock, Certificate Wall Badge, Testimonial Stand) */}
@@ -2032,14 +2231,14 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
             <>
               {/* Neon Sign Collider */}
               <mesh
-                position={[0, 2.05, -0.56]}
+                position={[0, 2.05, -0.535]}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectObject("neon");
                 }}
                 {...createHoverColliderHandlers("neon")}
               >
-                <boxGeometry args={[1.25, 0.45, 0.08]} />
+                <boxGeometry args={[1.15, 0.32, 0.06]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
 
@@ -2056,18 +2255,19 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
 
-              {/* Bookshelf Collider */}
+              {/* Bookshelf Collider for Overview Hover & Click */}
               <mesh
-                position={[1.95, 1.25, -0.25]}
+                position={[1.95, 1.14, -0.25]}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectObject("bookshelf");
                 }}
                 {...createHoverColliderHandlers("bookshelf")}
               >
-                <boxGeometry args={[0.55, 1.45, 0.95]} />
+                <boxGeometry args={[0.92, 2.20, 0.40]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
+
 
               {/* Certificate Book on desk */}
               <mesh
@@ -2107,7 +2307,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
                 }}
                 {...createHoverColliderHandlers("testimonials")}
               >
-                <boxGeometry args={[0.22, 0.12, 0.18]} />
+                <boxGeometry args={[0.28, 0.22, 0.16]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
 
@@ -2161,7 +2361,7 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
                 }}
                 {...createHoverColliderHandlers("tryhackme")}
               >
-                <boxGeometry args={[0.30, 0.40, 0.04]} />
+                <boxGeometry args={[0.32, 0.44, 0.08]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
 
@@ -2172,7 +2372,20 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
                   e.stopPropagation();
                   onToggleCurtains();
                 }}
-                {...createHoverColliderHandlers("window")}
+                onPointerOver={(e) => {
+                  e.stopPropagation();
+                  document.body.style.cursor = "pointer";
+                  onHoverObject(null);
+                }}
+                onPointerMove={(e) => {
+                  e.stopPropagation();
+                  document.body.style.cursor = "pointer";
+                  onHoverObject(null);
+                }}
+                onPointerOut={(e) => {
+                  e.stopPropagation();
+                  document.body.style.cursor = "default";
+                }}
               >
                 <boxGeometry args={[1.05, 1.30, 0.10]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
@@ -2262,10 +2475,10 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
             </group>
           )}
 
-          {/* Compact Hover Tooltip / Active TryHackMe Profile Pill */}
-          {((hoveredObj && interactionState === "ROOM_OVERVIEW") || (activeObjectId === "tryhackme" && interactionState === "OBJECT_FOCUSED")) && (
+          {/* Compact Hover Tooltip Pill */}
+          {hoveredObj && hoveredObj.id !== "window" && interactionState === "ROOM_OVERVIEW" && (
             <Html
-              position={activeObjectId === "tryhackme" ? [0.80, 1.80, -0.57] : hoveredObj!.labelOffset}
+              position={hoveredObj.labelOffset}
               center
               distanceFactor={3.6}
               zIndexRange={[100, 0]}
@@ -2275,10 +2488,10 @@ export const PortfolioRoom: React.FC<PortfolioRoomProps> = ({
               <div className="flex items-center gap-1.5 rounded-full border border-purple-400/50 bg-[#080a22]/90 px-3 py-1 shadow-[0_0_20px_rgba(168,85,247,0.45)] backdrop-blur-md">
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: activeObjectId === "tryhackme" ? "#22c55e" : hoveredObj!.color }}
+                  style={{ backgroundColor: hoveredObj.color }}
                 />
                 <span className="whitespace-nowrap text-xs font-semibold text-white">
-                  {activeObjectId === "tryhackme" ? "My live hacker profile" : hoveredObj!.name}
+                  {hoveredObj.name}
                 </span>
               </div>
             </Html>

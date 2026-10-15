@@ -77,9 +77,9 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           {/* Brand & Return Controls (Left Pill) */}
           <div className="pointer-events-auto flex items-center gap-2">
-            <div className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#070924]/85 px-4 py-2 backdrop-blur-xl shadow-lg">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-              <span className="text-xs font-bold tracking-tight text-white">
+            <div className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#070924]/85 px-4.5 py-2.5 backdrop-blur-xl shadow-lg">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+              <span className="text-sm font-bold tracking-tight text-white">
                 Sudeep S.
               </span>
             </div>
@@ -93,11 +93,11 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
                   onResetCamera();
                 }}
                 disabled={isTransitioning}
-                className="flex items-center gap-1.5 rounded-full border border-rose-500/50 bg-[#080924]/95 px-3.5 py-2 text-xs font-bold text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.35)] backdrop-blur-xl transition hover:bg-rose-600 hover:text-white disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-full border border-rose-500/50 bg-[#080924]/95 px-4 py-2 text-sm font-bold text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.35)] backdrop-blur-xl transition hover:bg-rose-600 hover:text-white disabled:opacity-50"
               >
-                <ArrowLeft className="h-3.5 w-3.5" />
+                <ArrowLeft className="h-4 w-4" />
                 <span>Back to Room</span>
-                <kbd className="rounded border border-rose-400/40 bg-rose-950/40 px-1 text-[9px]">
+                <kbd className="rounded border border-rose-400/40 bg-rose-950/40 px-1 text-[10px]">
                   Esc
                 </kbd>
               </button>
@@ -105,13 +105,13 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
 
             {/* Transition indicators */}
             {interactionState === "CAMERA_TRANSITION" && activeObj && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-300 animate-pulse">
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 animate-pulse">
                 Focusing on {activeObj.name}...
               </span>
             )}
 
             {interactionState === "RETURNING_TO_ROOM" && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-slate-400 animate-pulse">
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-slate-400 animate-pulse">
                 Returning to room overview...
               </span>
             )}
@@ -120,7 +120,7 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
           {/* Center Floating Pill Navigation (Matching Reference) */}
           <nav
             aria-label="Room sections"
-            className="pointer-events-auto hidden md:flex items-center gap-1 rounded-full border border-white/10 bg-[#070924]/80 p-1.5 backdrop-blur-xl shadow-xl"
+            className="pointer-events-auto hidden md:flex items-center gap-1.5 rounded-full border border-white/10 bg-[#070924]/80 p-2 backdrop-blur-xl shadow-xl"
           >
             {navItems.map((item) => {
               const isSelected = activeObjectId === item.id;
@@ -132,10 +132,10 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
                     playSound("click", soundEnabled);
                     onSelectObject(item.id);
                   }}
-                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
                     isSelected
                       ? "bg-purple-600 text-white shadow-sm"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      : "text-slate-200 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {item.label}
@@ -171,10 +171,10 @@ export const PortfolioHUD: React.FC<PortfolioHUDProps> = ({
                 playSound("click", soundEnabled);
                 onToggleTextVersion();
               }}
-              className="hidden lg:flex items-center gap-1.5 rounded-full border border-white/10 bg-[#070924]/85 px-3 py-2 text-xs font-semibold text-slate-300 backdrop-blur-xl transition hover:bg-white/15 hover:text-white shadow-lg"
+              className="hidden lg:flex items-center gap-2 rounded-full border border-white/10 bg-[#070924]/85 px-4 py-2.5 text-sm font-semibold text-slate-200 backdrop-blur-xl transition hover:bg-white/15 hover:text-white shadow-lg"
               title="Accessible plain text portfolio"
             >
-              <FileText className="h-3.5 w-3.5 text-purple-300" />
+              <FileText className="h-4 w-4 text-purple-300" />
               <span>Text View</span>
             </button>
           </div>

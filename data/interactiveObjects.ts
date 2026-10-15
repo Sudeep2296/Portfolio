@@ -34,7 +34,7 @@ export const interactiveObjects: Record<string, InteractiveRoomObject> = {
     hint: "Click to view identity & summary",
     color: "#f43f5e",
     description: "Personal identity and technical philosophy.",
-    labelOffset: [0, 2.22, -0.56],
+    labelOffset: [0, 1.74, -0.56],
   },
   monitor: {
     id: "monitor",
@@ -256,6 +256,6 @@ export const interactiveObjects: Record<string, InteractiveRoomObject> = {
     hint: "Click to toggle window curtains",
     color: "#38bdf8",
     description: "Toggle velvet curtains to change room ambiance and natural lighting.",
-    labelOffset: [-2.40, 2.38, -0.52],
+    labelOffset: [-2.40, 1.65, -0.52],
   },
 };

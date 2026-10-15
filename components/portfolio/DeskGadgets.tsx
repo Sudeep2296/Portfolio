@@ -46,17 +46,20 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
 
     if (clockRef.current) {
       const target = isClock ? 1.05 : 1.0;
-      const cur = THREE.MathUtils.damp(clockRef.current.scale.x, target, 12, delta);
+      let cur = THREE.MathUtils.damp(clockRef.current.scale.x, target, 12, delta);
+      if (Math.abs(cur - target) < 0.0002) cur = target;
       clockRef.current.scale.set(cur, cur, cur);
     }
     if (thmRef.current) {
       const target = isThm ? 1.05 : 1.0;
-      const cur = THREE.MathUtils.damp(thmRef.current.scale.x, target, 12, delta);
+      let cur = THREE.MathUtils.damp(thmRef.current.scale.x, target, 12, delta);
+      if (Math.abs(cur - target) < 0.0002) cur = target;
       thmRef.current.scale.set(cur, cur, cur);
     }
     if (testRef.current) {
       const target = isTest ? 1.05 : 1.0;
-      const cur = THREE.MathUtils.damp(testRef.current.scale.x, target, 12, delta);
+      let cur = THREE.MathUtils.damp(testRef.current.scale.x, target, 12, delta);
+      if (Math.abs(cur - target) < 0.0002) cur = target;
       testRef.current.scale.set(cur, cur, cur);
     }
   });
@@ -168,16 +171,21 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
           style={{ width: "248px", height: "348px", pointerEvents: "auto", cursor: "pointer" }}
         >
           <div
-            onClick={onSelectTryHackMe}
-            onPointerEnter={() => {
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectTryHackMe?.();
+            }}
+            onPointerEnter={(e) => {
+              e.stopPropagation();
               document.body.style.cursor = "pointer";
               onHoverObject?.("tryhackme");
             }}
-            onPointerLeave={() => {
+            onPointerLeave={(e) => {
+              e.stopPropagation();
               document.body.style.cursor = "default";
               onHoverObject?.(null);
             }}
-            className="relative flex h-full w-full flex-col justify-between overflow-hidden bg-gradient-to-b from-[#1b2336] to-[#111624] px-3.5 py-3 text-white select-none transition hover:brightness-105"
+            className="relative flex h-full w-full flex-col justify-between overflow-hidden bg-gradient-to-b from-[#1b2336] to-[#111624] px-3.5 py-3 text-white select-none"
           >
             {/* Top Subtitle: HACKER PROFILE */}
             <div className="text-center pt-1.5">
@@ -232,17 +240,20 @@ export const DeskGadgets: React.FC<DeskGadgetsProps> = ({
           style={{ width: "500px", pointerEvents: "auto", cursor: "pointer" }}
         >
           <div
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               if (onToggleTestimonialCard) {
                 onToggleTestimonialCard();
               }
               onSelectTestimonials?.();
             }}
-            onPointerEnter={() => {
+            onPointerEnter={(e) => {
+              e.stopPropagation();
               document.body.style.cursor = "pointer";
               onHoverObject?.("testimonials");
             }}
-            onPointerLeave={() => {
+            onPointerLeave={(e) => {
+              e.stopPropagation();
               document.body.style.cursor = "default";
               onHoverObject?.(null);
             }}

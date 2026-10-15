@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useRef, useMemo, useState } from "react";
+import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
 interface WindowCurtainsProps {
@@ -32,8 +31,6 @@ export const WindowCurtains: React.FC<WindowCurtainsProps> = ({
   onToggle,
   interactionState = "ROOM_OVERVIEW",
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   // Animation progress: 0 = fully open, 1 = fully closed
   const animProgress = useRef(curtainsClosed ? 1 : 0);
 
@@ -156,16 +153,6 @@ export const WindowCurtains: React.FC<WindowCurtainsProps> = ({
         e.stopPropagation();
         onToggle();
       }}
-      onPointerOver={(e) => {
-        if (interactionState !== "ROOM_OVERVIEW") return;
-        e.stopPropagation();
-        document.body.style.cursor = "pointer";
-        setIsHovered(true);
-      }}
-      onPointerOut={() => {
-        document.body.style.cursor = "default";
-        setIsHovered(false);
-      }}
     >
       {/* 1. Curtain Rod / Pole (Directly above window top at Y = 2.19, Z = -0.520) */}
       <group position={[-2.40, 2.19, -0.520]}>
@@ -239,30 +226,6 @@ export const WindowCurtains: React.FC<WindowCurtainsProps> = ({
         position={[-1.955, 1.57, -0.520]}
         castShadow
       />
-
-
-
-
-
-      {/* Interactive Tooltip Badge */}
-      {isHovered && (
-        <Html
-          position={[-2.40, 2.38, -0.52]}
-          center
-          distanceFactor={3.6}
-          className="pointer-events-none select-none transition-all duration-200"
-        >
-          <div className="flex items-center gap-1.5 rounded-full border border-indigo-400/50 bg-[#070924]/90 px-3 py-1 shadow-[0_0_20px_rgba(99,102,241,0.5)] backdrop-blur-md">
-            <span
-              className="h-1.5 w-1.5 rounded-full animate-pulse"
-              style={{ backgroundColor: curtainsClosed ? "#38bdf8" : "#818cf8" }}
-            />
-            <span className="whitespace-nowrap text-xs font-semibold text-white">
-              {curtainsClosed ? "Curtains (Closed) · Click to open" : "Curtains · Click to close"}
-            </span>
-          </div>
-        </Html>
-      )}
     </group>
   );
 };

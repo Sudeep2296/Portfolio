@@ -8,6 +8,7 @@ interface BookshelfDecorationsProps {
   onSelectShelf?: () => void;
   onHoverShelf?: (hover: boolean) => void;
   hoveredObjectId?: string | null;
+  interactionState?: string;
 }
 
 export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
@@ -15,22 +16,31 @@ export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
   onSelectShelf,
   onHoverShelf,
   hoveredObjectId,
+  interactionState = "ROOM_OVERVIEW",
 }) => {
-  const shelfRef = useRef<THREE.Group | null>(null);
+  const shelfCenterGroupRef = useRef<THREE.Group | null>(null);
 
-  useFrame((state, delta) => {
-    if (shelfRef.current) {
-      const target = hoveredObjectId === "bookshelf" ? 1.05 : 1.0;
-      const cur = THREE.MathUtils.damp(shelfRef.current.scale.x, target, 12, delta);
-      shelfRef.current.scale.set(cur, cur, cur);
+  // Synchronize hover scale with 3D bookshelf in ROOM_OVERVIEW around exact identical center [1.95, 1.14, -0.40]
+  useFrame((_, delta) => {
+    if (shelfCenterGroupRef.current) {
+      const isHovered = interactionState === "ROOM_OVERVIEW" && hoveredObjectId === "bookshelf";
+      const target = isHovered ? 1.05 : 1.0;
+      let cur = THREE.MathUtils.damp(shelfCenterGroupRef.current.scale.x, target, 12, delta);
+      if (Math.abs(cur - target) < 0.0002) cur = target;
+      shelfCenterGroupRef.current.scale.set(cur, cur, cur);
     }
   });
 
   return (
-    <group ref={shelfRef} position={[1.95, 0, -0.23]}>
-      {/* 1. Warm LED Light Strips along the front edge of each shelf board */}
-      {[1.818, 1.398, 0.978, 0.558].map((yPos, idx) => (
-        <group key={`shelf-led-${idx}`} position={[0, yPos, -0.015]}>
+    <group ref={shelfCenterGroupRef} position={[1.95, 1.14, -0.40]}>
+      {/* 1. Warm LED Light Strips along the front edge of each shelf board (perfectly locked to boards) */}
+      {[
+        { y: 0.678, key: "pro-shelf" },
+        { y: 0.258, key: "mid-shelf" },
+        { y: -0.162, key: "low-shelf" },
+        { y: -0.582, key: "base-shelf" },
+      ].map((strip, idx) => (
+        <group key={`shelf-led-${idx}`} position={[0, strip.y, 0.155]}>
           <mesh>
             <planeGeometry args={[0.84, 0.008]} />
             <meshBasicMaterial color="#fff3d1" toneMapped={false} />
@@ -47,7 +57,7 @@ export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
       ))}
 
       {/* 2. Top Shelf Banner: 💼 PROFESSIONAL PROJECTS · 2 */}
-      <group position={[0, 1.78, 0.005]}>
+      <group position={[0, 0.64, 0.175]}>
         <Html
           transform
           distanceFactor={0.24}
@@ -71,7 +81,7 @@ export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
       </group>
 
       {/* 3. Middle Shelf Banner: 🚀 PERSONAL PROJECTS · 7 */}
-      <group position={[0, 1.36, 0.005]}>
+      <group position={[0, 0.22, 0.175]}>
         <Html
           transform
           distanceFactor={0.24}
@@ -95,7 +105,7 @@ export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
       </group>
 
       {/* 4. Lower Shelf Banner: 🎓 ACADEMIC PROJECTS · 3 */}
-      <group position={[0, 0.94, 0.005]}>
+      <group position={[0, -0.20, 0.175]}>
         <Html
           transform
           distanceFactor={0.24}
@@ -118,9 +128,9 @@ export const BookshelfDecorations: React.FC<BookshelfDecorationsProps> = ({
         </Html>
       </group>
 
-      {/* 5. Bottom floating hint badge matching reference: "Every book is a project — pick one" */}
+      {/* 5. Bottom floating hint badge matching reference */}
       {isFocused && (
-        <group position={[0, 0.44, 0.12]}>
+        <group position={[0, -0.70, 0.29]}>
           <Html
             transform
             distanceFactor={0.25}

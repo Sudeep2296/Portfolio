@@ -22,7 +22,7 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
   isOn = true,
 }) => {
   const [roleIndex, setRoleIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
+  const [displayText, setDisplayText] = useState(ROLES[0]);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -40,13 +40,13 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
         // Pause at full word
         timer = setTimeout(() => {
           setIsDeleting(true);
-        }, 1900);
+        }, 2200);
       }
     } else {
       if (displayText.length > 0) {
         timer = setTimeout(() => {
           setDisplayText(currentRole.slice(0, displayText.length - 1));
-        }, 45);
+        }, 40);
       } else {
         setIsDeleting(false);
         setRoleIndex((prev) => (prev + 1) % ROLES.length);
@@ -56,12 +56,14 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
     return () => clearTimeout(timer);
   }, [displayText, isDeleting, roleIndex, isOn]);
 
+  const currentArticle = /^[AEIOU]/i.test(ROLES[roleIndex]) ? "an" : "a";
+
   return (
     <div
       onClick={onSelect}
-      className={`relative flex h-[240px] w-[1040px] items-center justify-center select-none cursor-pointer rounded-2xl border transition-all duration-300 px-8 py-5 backdrop-blur-md ${
+      className={`relative flex h-[240px] w-[1080px] items-center justify-center select-none cursor-pointer rounded-2xl border transition-all duration-300 px-12 py-5 backdrop-blur-md hover:scale-[1.015] ${
         isOn
-          ? "border-white/10 bg-[#070617]/90 shadow-[0_0_35px_rgba(176,102,255,0.25)]"
+          ? "border-white/10 bg-[#070617]/95 shadow-[0_0_35px_rgba(176,102,255,0.25)] hover:border-white/20 hover:shadow-[0_0_45px_rgba(176,102,255,0.4)]"
           : "border-white/[0.04] bg-[#050412]/60 shadow-none opacity-70"
       }`}
       style={{
@@ -74,15 +76,15 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
       <div className="absolute bottom-4 left-5 h-4 w-4 rounded-full bg-slate-400 shadow-[0_0_6px_rgba(255,255,255,0.4)] border border-slate-600" />
       <div className="absolute bottom-4 right-5 h-4 w-4 rounded-full bg-slate-400 shadow-[0_0_6px_rgba(255,255,255,0.4)] border border-slate-600" />
 
-      {/* Main Glowing Neon Text - Turned on vs off dormant glass tubes */}
-      <div className="flex items-baseline justify-center text-[42px] font-extrabold tracking-tight whitespace-nowrap transition-colors duration-200">
+      {/* Main Glowing Neon Text - Stabilized Anchor to eliminate any text tremor/jitter */}
+      <div className="flex items-baseline justify-center text-[46px] font-extrabold tracking-tight whitespace-nowrap">
         <span
-          className={`mr-3 font-semibold transition-all duration-200 ${
+          className={`font-bold transition-colors duration-200 shrink-0 mr-3.5 ${
             isOn ? "text-white" : "text-[#2e2a44]"
           }`}
           style={{
             textShadow: isOn
-              ? "0 0 4px #ffffff, 0 0 12px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.5)"
+              ? "0 0 6px #ffffff, 0 0 16px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.6)"
               : "0 1px 2px rgba(0,0,0,0.8)",
           }}
         >
@@ -90,12 +92,12 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
         </span>
 
         <span
-          className={`mr-3 font-extrabold transition-all duration-200 ${
+          className={`font-black transition-colors duration-200 shrink-0 mr-3.5 ${
             isOn ? "text-[#38bdf8]" : "text-[#22364c]"
           }`}
           style={{
             textShadow: isOn
-              ? "0 0 4px #38bdf8, 0 0 14px #0284c7, 0 0 30px rgba(56,189,248,0.85)"
+              ? "0 0 6px #38bdf8, 0 0 18px #0284c7, 0 0 36px rgba(56,189,248,0.9)"
               : "0 1px 2px rgba(0,0,0,0.8)",
           }}
         >
@@ -103,29 +105,29 @@ export const NeonSignScreen: React.FC<NeonSignScreenProps> = ({
         </span>
 
         <span
-          className={`mr-3 font-semibold transition-all duration-200 ${
+          className={`font-bold transition-colors duration-200 shrink-0 inline-block text-center w-[48px] mr-2 ${
             isOn ? "text-white" : "text-[#2e2a44]"
           }`}
           style={{
             textShadow: isOn
-              ? "0 0 4px #ffffff, 0 0 12px rgba(255,255,255,0.9), 0 0 25px rgba(255,255,255,0.5)"
+              ? "0 0 6px #ffffff, 0 0 16px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.6)"
               : "0 1px 2px rgba(0,0,0,0.8)",
           }}
         >
-          a
+          {currentArticle}
         </span>
 
         <span
-          className={`font-extrabold transition-all duration-200 ${
+          className={`font-black transition-colors duration-200 inline-block text-left min-w-[530px] shrink-0 ${
             isOn ? "text-[#c084fc]" : "text-[#32234d]"
           }`}
           style={{
             textShadow: isOn
-              ? "0 0 4px #c084fc, 0 0 14px #a855f7, 0 0 32px rgba(168,85,247,0.9)"
+              ? "0 0 6px #c084fc, 0 0 18px #a855f7, 0 0 38px rgba(168,85,247,0.95)"
               : "0 1px 2px rgba(0,0,0,0.8)",
           }}
         >
-          {displayText || "Cybersecurity Engineer"}
+          {displayText}
           <span
             className={`inline-block ml-1 font-light ${
               isOn ? "animate-pulse text-[#e9d5ff]" : "text-[#32234d] opacity-50"
